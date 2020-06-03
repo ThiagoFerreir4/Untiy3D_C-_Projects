@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class Rocket : MonoBehaviour
@@ -21,8 +22,10 @@ public class Rocket : MonoBehaviour
     enum State { Alive, Dying, Transcending }
     State state = State.Alive;
 
-	// Use this for initialization
-	void Start () 
+    bool collisionsDisabled = false;
+
+    // Use this for initialization
+    void Start () 
     {
 		rigidBody = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
@@ -36,11 +39,27 @@ public class Rocket : MonoBehaviour
             RespondToThrustInput();
             RespondToRotateInput();
         }
+        if (Debug.isDebugBuild)
+        {
+            RespondtoDebugKeys();
+        }
+    }
+
+    private void RespondtoDebugKeys()
+    {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            LoadNextLevel();
+        }
+        else if (Input.GetKeyDown(KeyCode.C))
+        {
+            collisionsDisabled = !collisionsDisabled; //Toggle
+        }
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        if (state != State.Alive) {  return; } // Ignore collisions when dead
+        if (state != State.Alive || collisionsDisabled) {  return; }
 
         switch (collision.gameObject.tag)
         { 
@@ -76,6 +95,8 @@ public class Rocket : MonoBehaviour
 
     private void LoadNextLevel()
     {
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        print(currentSceneIndex);
         SceneManager.LoadScene(1); //To do Allow for 2 more levels
     }
 
